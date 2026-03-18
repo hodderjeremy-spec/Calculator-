@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeremy's Valve Labeler - Original Fixed</title>
+    <style>
+        :root { --primary: #2c3e50; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        
+        .container { 
+            background: white; padding: 1.5rem; border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 450px; 
+            width: 100%; margin-bottom: 20px; 
+        }
+        
+        .form-group { margin-bottom: 0.8rem; }
+        label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 0.85rem; }
+        
+        input { 
+            width: 100%; padding: 12px; border: 2px solid #ddd; 
+            border-radius: 4px; box-sizing: border-box; font-size: 1.1rem; 
+        }
+        
+        #label-preview {
+            width: 4in; height: 2in; border: 1px solid #000; background: white;
+            padding: 0.05in 0.15in; box-sizing: border-box; display: flex;
+            flex-direction: column; color: black; overflow: hidden;
+        }
+
+        .test-header { display: flex; justify-content: space-between; height: 0.6in; margin-bottom: 2px; }
+        .test-slot { display: flex; align-items: center; gap: 2px; }
+        .write-space { height: 45px; width: 0.55in; }
+        .slash { font-size: 1.6rem; font-weight: bold; margin-top: 10px; }
+
+        .write-line-small { width: 0.45in; border-bottom: 1.2px solid black; display: inline-block; margin-left: 2px; vertical-align: bottom; height: 14px; }
+        .write-line-cap { width: 0.7in; border-bottom: 1.2px solid black; display: inline-block; margin-left: 2px; vertical-align: bottom; height: 14px; }
+
+        .label-row { display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 0.82rem; line-height: 1.2; }
+        .range-box { font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 0.9rem; }
+        
+        .footer-row { margin-top: auto; border-top: 1.2px solid black; padding: 4px 0; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; align-items: center; }
+        .status-circle-group { font-size: 0.85rem; letter-spacing: 1px; border: 1px solid #999; padding: 1px 5px; }
+
+        .btn-print { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 1.1rem; }
+
+        @media print {
+            body * { visibility: hidden; }
+            .container { display: none !important; }
+            #label-preview, #label-preview * { visibility: visible !important; }
+            #label-preview { 
+                position: fixed !important; 
+                left: 0 !important; 
+                top: 0 !important; 
+                border: none !important; 
+                margin: 0 !important; 
+                width: 4in !important;
+                height: 2in !important;
+                padding: 0.05in 0.15in !important;
+                background: white !important;
+            }
+            @page { size: 4in 2in; margin: 0; }
+            html, body { width: 4in; height: 2in; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="margin-top:0">Valve Test Setup</h2>
+    <div class="form-group">
+        <label>Target Set Pressure (PSI)</label>
+        <input type="number" id="setPsiInput" inputmode="decimal" placeholder="Enter PSI" oninput="runCalculator()">
+    </div>
+    <div class="form-group">
+        <label>Valve Serial # / ID</label>
+        <input type="text" id="serialInput" placeholder="Optional" oninput="runCalculator()">
+    </div>
+    <button class="btn-print" onclick="window.print()">Print Label (4" x 2")</button>
+</div>
+
+<div id="label-preview">
+    <div class="test-header">
+        <div class="test-slot"><div class="write-space"></div><span class="slash">/</span><div class="write-space"></div></div>
+        <div class="test-slot"><div class="write-space"></div><span class="slash">/</span><div class="write-space"></div></div>
+        <div class="test-slot"><div class="write-space"></div><span class="slash">/</span><div class="write-space"></div></div>
+    </div>
+    
+    <div class="label-row" style="border-top: 1px solid #000; padding-top: 2px; margin-top: 2px;">
+        <span>SN: <strong id="lblSerial">________</strong></span>
+        <span>Bore: <div class="write-line-small"></div></span>
+        <span>BD: <div class="write-line-small"></div></span>
+    </div>
+
+    <div class="label-row" style="margin: 2px 0; border-top: 1px dashed #999; padding-top: 2px;">
+        <span><strong>SPECIFIED SET:</strong></span>
+        <span><strong id="lblSetPsi">---</strong> PSI</span>
+    </div>
+
+    <div class="label-row">
+        <span id="tolTitle">Tolerance:</span>
+        <span class="range-box" id="tolValue">--- to ---</span>
+    </div>
+
+    <div class="label-row">
+        <span id="adjTitle">T/O ADJ:</span>
+        <span class="range-box" id="adjValue">--- to ---</span>
+    </div>
+
+    <div class="label-row">
+        <span id="seatTitle">Seat Test:</span>
+        <span class="range-box" id="seatValue">---</span>
+    </div>
+
+    <div class="footer-row">
+        <div>Cap: <div class="write-line-cap"></div></div>
+        <div class="status-circle-group">PASS / FAIL</div>
+        <div style="font-size: 0.7rem;">Date: <span id="lblDate"></span></div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('lblDate').innerText = new Date().toLocaleDateString();
+
+    function runCalculator() {
+        const psi = parseFloat(document.getElementById('setPsiInput').value);
+        const serial = document.getElementById('serialInput').value;
+        document.getElementById('lblSerial').innerText = serial || "________";
+        
+        if (!isNaN(psi) && psi > 0) {
+            document.getElementById('lblSetPsi').innerText = psi.toFixed(1);
+            let tLow, tHigh, aLow, aHigh, sVal;
+            if (psi <= 70) {
+                tLow = (psi - 2).toFixed(1); tHigh = (psi + 2).toFixed(1);
+                aLow = (psi - 4).toFixed(1); aHigh = (psi + 4).toFixed(1);
+                document.getElementById('tolTitle').innerText = "Tolerance (±2 PSI):";
+                document.getElementById('adjTitle').innerText = "T/O ADJ (±4 PSI):";
+            } else {
+                const m3 = psi * 0.03; const m6 = psi * 0.06;
+                tLow = (psi - m3).toFixed(1); tHigh = (psi + m3).toFixed(1);
+                aLow = (psi - m6).toFixed(1); aHigh = (psi + m6).toFixed(1);
+                document.getElementById('tolTitle').innerText = "Tolerance (±3%):";
+                document.getElementById('adjTitle').innerText = "T/O ADJ (±6%):";
+            }
+            document.getElementById('tolValue').innerText = tLow + " - " + tHigh;
+            document.getElementById('adjValue').innerText = aLow + " - " + aHigh;
+
+            if (psi <= 50) {
+                sVal = (psi - 5).toFixed(1);
+                document.getElementById('seatTitle').innerText = "Seat Test (-5 PSI):";
+            } else {
+                sVal = (psi * 0.90).toFixed(1);
+                document.getElementById('seatTitle').innerText = "Seat Test (90%):";
+            }
+            document.getElementById('seatValue').innerText = sVal + " PSI";
+        } else {
+            document.getElementById('lblSetPsi').innerText = "---";
+            document.getElementById('tolValue').innerText = "--- to ---";
+            document.getElementById('adjValue').innerText = "--- to ---";
+            document.getElementById('seatValue').innerText = "---";
+        }
+    }
+</script>
+</body>
+</html>
