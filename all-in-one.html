@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Valve Test Labeler - All-in-One</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        
+        /* Print Specifics for 4x2 Labels */
+        @media print {
+            @page { size: 4in 2in; margin: 0; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; padding: 0; margin: 0; }
+        }
+        
+        /* Hide print-only elements on screen */
+        .print-only { display: none; }
+        
+        /* Custom touch-friendly input styling */
+        input { appearance: none; -webkit-appearance: none; }
+    </style>
+</head>
+<body class="bg-[#f5f5f5] text-[#1a1a1a] p-4 md:p-8">
+
+    <div class="max-w-2xl mx-auto no-print">
+        <!-- Header -->
+        <header class="mb-8 flex items-center gap-3">
+            <div class="bg-black p-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="8" x2="16" y1="10" y2="10"/><line x1="8" x2="16" y1="14" y2="14"/><line x1="8" x2="16" y1="18" y2="18"/></svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-semibold tracking-tight">Valve Test Labeler</h1>
+                <p class="text-sm text-gray-500">iPad Optimized • ASME / API 527</p>
+            </div>
+        </header>
+
+        <!-- Input Section -->
+        <div class="bg-white rounded-3xl shadow-sm border border-black/5 p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-gray-400">Target Set Pressure (PSI)</label>
+                    <input type="number" id="setPsi" inputmode="decimal" placeholder="0.0" 
+                           class="w-full bg-[#f9f9f9] border-2 border-transparent focus:border-black rounded-2xl p-4 text-xl font-medium transition-all outline-none">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-gray-400">Valve Serial / ID</label>
+                    <input type="text" id="serial" placeholder="Optional" 
+                           class="w-full bg-[#f9f9f9] border-2 border-transparent focus:border-black rounded-2xl p-4 text-xl font-medium transition-all outline-none">
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsCard" class="bg-white rounded-3xl shadow-sm border border-black/5 p-6 opacity-50">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-6 flex items-center gap-2">
+                Calculated Specifications
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between items-end border-b border-gray-100 pb-4">
+                    <div>
+                        <p class="text-sm text-gray-500" id="tolLabel">Tolerance</p>
+                        <p class="text-2xl font-light" id="tolValue">---</p>
+                    </div>
+                    <p class="text-xs font-mono text-gray-400">PSI</p>
+                </div>
+
+                <div class="flex justify-between items-end border-b border-gray-100 pb-4">
+                    <div>
+                        <p class="text-sm text-gray-500" id="adjLabel">T/O ADJ (2x Tol)</p>
+                        <p class="text-2xl font-light" id="adjValue">---</p>
+                    </div>
+                    <p class="text-xs font-mono text-gray-400">PSI</p>
+                </div>
+
+                <div class="flex justify-between items-end">
+                    <div>
+                        <p class="text-sm text-gray-500" id="seatLabel">Seat Test</p>
+                        <p class="text-2xl font-light" id="seatValue">---</p>
+                    </div>
+                    <p class="text-xs font-mono text-gray-400">PSI</p>
+                </div>
+            </div>
+
+            <button onclick="window.print()" id="printBtn" disabled
+                    class="w-full mt-8 bg-black text-white rounded-2xl p-5 font-semibold flex items-center justify-center gap-3 active:scale-[0.98] transition-transform disabled:opacity-30">
+                Print 4" x 2" Label
+            </button>
+        </div>
+    </div>
+
+    <!-- PRINT ONLY LABEL (Ultra-Compact Fix) -->
+    <div class="print-only">
+        <div style="width: 4in; height: 1.85in; padding: 0.05in 0.1in; box-sizing: border-box; display: flex; flex-direction: column; background: white; color: black; font-family: monospace; font-size: 10pt; line-height: 1.0; overflow: hidden; position: absolute; top: 0; left: 0;">
+            <div class="flex justify-between h-[0.4in] mb-1">
+                <div class="flex items-center gap-1"><div class="w-[0.4in] h-[0.3in] border-b border-black"></div><span class="text-lg font-bold">/</span><div class="w-[0.4in] h-[0.3in] border-b border-black"></div></div>
+                <div class="flex items-center gap-1"><div class="w-[0.4in] h-[0.3in] border-b border-black"></div><span class="text-lg font-bold">/</span><div class="w-[0.4in] h-[0.3in] border-b border-black"></div></div>
+                <div class="flex items-center gap-1"><div class="w-[0.4in] h-[0.3in] border-b border-black"></div><span class="text-lg font-bold">/</span><div class="w-[0.4in] h-[0.3in] border-b border-black"></div></div>
+            </div>
+            <div class="border-t border-black pt-1 flex justify-between text-[8.5pt]">
+                <span>SN: <strong id="pSerial">________</strong></span>
+                <span>Bore: ____</span>
+                <span>BD: ____</span>
+            </div>
+            <div class="border-t border-dashed border-gray-400 my-0.5 pt-0.5 flex justify-between">
+                <span class="font-bold">SPECIFIED SET:</span>
+                <span class="font-bold"><span id="pSet">---</span> PSI</span>
+            </div>
+            <div class="flex justify-between text-[9.5pt]">
+                <span>Tolerance (<span id="pTolLab">---</span>):</span>
+                <span class="font-bold" id="pTolVal">---</span>
+            </div>
+            <div class="flex justify-between text-[9.5pt]">
+                <span>T/O ADJ (<span id="pAdjLab">---</span>):</span>
+                <span class="font-bold" id="pAdjVal">---</span>
+            </div>
+            <div class="flex justify-between text-[9.5pt]">
+                <span>Seat Test (<span id="pSeatLab">---</span>):</span>
+                <span class="font-bold" id="pSeatVal">---</span>
+            </div>
+            <div class="mt-auto border-t border-black pt-1 flex justify-between items-center text-[8pt]">
+                <span>Cap: <span class="inline-block w-[0.5in] border-b border-black"></span></span>
+                <div class="border border-black px-1.5 py-0.5 font-bold text-[8.5pt]">PASS / FAIL</div>
+                <span>Date: <span id="pDate"></span></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const setPsiInput = document.getElementById('setPsi');
+        const serialInput = document.getElementById('serial');
+        const pDate = document.getElementById('pDate');
+        pDate.innerText = new Date().toLocaleDateString();
+
+        function update() {
+            const psi = parseFloat(setPsiInput.value);
+            const serial = serialInput.value;
+            const card = document.getElementById('resultsCard');
+            const btn = document.getElementById('printBtn');
+
+            // Update Print Preview
+            document.getElementById('pSerial').innerText = serial || '________';
+            document.getElementById('pSet').innerText = psi || '---';
+
+            if (!isNaN(psi) && psi > 0) {
+                card.classList.remove('opacity-50');
+                btn.disabled = false;
+
+                let tLow, tHigh, tLab, aLow, aHigh, aLab, sVal, sLab;
+
+                if (psi <= 70) {
+                    tLow = (psi - 2).toFixed(1); tHigh = (psi + 2).toFixed(1); tLab = "±2 PSI";
+                    aLow = (psi - 4).toFixed(1); aHigh = (psi + 4).toFixed(1); aLab = "±4 PSI";
+                } else {
+                    const m3 = psi * 0.03; const m6 = psi * 0.06;
+                    tLow = (psi - m3).toFixed(1); tHigh = (psi + m3).toFixed(1); tLab = "±3%";
+                    aLow = (psi - m6).toFixed(1); aHigh = (psi + m6).toFixed(1); aLab = "±6%";
+                }
+
+                if (psi <= 50) {
+                    sVal = (psi - 5).toFixed(1); sLab = "-5 PSI";
+                } else {
+                    sVal = (psi * 0.90).toFixed(1); sLab = "90%";
+                }
+
+                // Update Screen
+                document.getElementById('tolLabel').innerText = `Tolerance ${tLab}`;
+                document.getElementById('tolValue').innerText = `${tLow} – ${tHigh}`;
+                document.getElementById('adjLabel').innerText = `T/O ADJ (2x Tol) ${aLab}`;
+                document.getElementById('adjValue').innerText = `${aLow} – ${aHigh}`;
+                document.getElementById('seatLabel').innerText = `Seat Test ${sLab}`;
+                document.getElementById('seatValue').innerText = sVal;
+
+                // Update Print
+                document.getElementById('pTolLab').innerText = tLab;
+                document.getElementById('pTolVal').innerText = `${tLow} - ${tHigh}`;
+                document.getElementById('pAdjLab').innerText = aLab;
+                document.getElementById('pAdjVal').innerText = `${aLow} - ${aHigh}`;
+                document.getElementById('pSeatLab').innerText = sLab;
+                document.getElementById('pSeatVal').innerText = `${sVal} PSI`;
+            } else {
+                card.classList.add('opacity-50');
+                btn.disabled = true;
+                document.getElementById('tolValue').innerText = '---';
+                document.getElementById('adjValue').innerText = '---';
+                document.getElementById('seatValue').innerText = '---';
+            }
+        }
+
+        setPsiInput.addEventListener('input', update);
+        serialInput.addEventListener('input', update);
+    </script>
+</body>
+</html>
